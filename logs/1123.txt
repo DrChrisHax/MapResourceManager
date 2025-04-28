@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 128
+Time: 1123
+Description: Accidental house fire due to stove malfunction
+--- INCIDENT END ---

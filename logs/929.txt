@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 4
+Time: 929
+Description: A kitchen fire triggered the building’s smoke alarms at the school cafeteria.
+--- INCIDENT END ---

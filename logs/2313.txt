@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 8
+Time: 2313
+Description: Theft of personal belongings reported at Central Park.
+--- INCIDENT END ---

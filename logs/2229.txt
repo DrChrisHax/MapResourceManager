@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 7
+Time: 2229
+Description: Multiple cars involved in a major highway collision near exit 47.
+--- INCIDENT END ---

@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 2
+Time: 1040
+Description: A worker fell from a ladder and sustained serious injuries.
+--- INCIDENT END ---

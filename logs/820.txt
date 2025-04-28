@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 6
+Time: 820
+Description: Smoke was detected coming from the kitchen of a local restaurant.
+--- INCIDENT END ---

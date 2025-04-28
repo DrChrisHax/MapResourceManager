@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 8
+Time: 347
+Description: An armed assault was reported outside the shopping mall entrance.
+--- INCIDENT END ---

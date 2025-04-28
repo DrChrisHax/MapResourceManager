@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 9
+Time: 1517
+Description: An assault occurred outside the movie theater.
+--- INCIDENT END ---
