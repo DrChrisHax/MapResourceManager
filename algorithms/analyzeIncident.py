@@ -2,12 +2,12 @@
 HOW TO USE:
 from algorithms.analyzeIncident import response
 
-with open('logs/{filename}), 'r', encoding = 'utf-8') as file:
-    description = file.read()
-({emergency service} , 'address') = response(description)
+use response(time) with time being 3-4 digit length int
+
+({emergency service} , 'address') = response(time)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ <- This is what you retrieve with this file
 """
-
+from huffman import decode_file
 
 def analyze_incident(description: str):
     KEYWORDS_TO_SERVICES = {
@@ -75,5 +75,8 @@ def extract_address(description: str):
     
     return description[start_pos:end_pos].strip()
 
-def response(desc):
+def response(time : int):
+    desc = decode_file(time)
     return analyze_incident(desc), extract_address(desc)
+
+#print(response(129)) - test
