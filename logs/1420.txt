@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 2
+Time: 1420
+Description: An unconscious person was found at the public library.
+--- INCIDENT END ---

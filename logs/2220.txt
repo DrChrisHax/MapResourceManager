@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 8
+Time: 2220
+Description: A vehicle collision caused multiple injuries on Main Street.
+--- INCIDENT END ---

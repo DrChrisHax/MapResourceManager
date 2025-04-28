@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 1
+Time: 1723
+Description: A fire broke out in the second story of an apartment unit
+--- INCIDENT END ---

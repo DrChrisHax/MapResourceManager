@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 2
+Time: 230
+Description: A robbery was reported at the downtown bank.
+--- INCIDENT END ---

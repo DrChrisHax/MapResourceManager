@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 7
+Time: 1611
+Description: A car fire erupted near the gas station.
+--- INCIDENT END ---

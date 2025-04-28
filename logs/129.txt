@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 3
+Time: 129
+Description: An elderly man suffered a heart attack in the grocery store.
+--- INCIDENT END ---
