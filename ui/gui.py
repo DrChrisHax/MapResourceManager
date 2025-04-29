@@ -2,6 +2,10 @@ import tkinter as tk
 from tkinter import Canvas
 import networkx as nx
 import random
+import os
+
+from models.node import Node
+from PIL import Image, ImageTk
 
 temp = "404: Value Not Found"  # Placeholder for resource values
 
@@ -9,7 +13,7 @@ class SimulationUI:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Simulation Home Page")
-        self.root.geometry("1200x650")
+        self.root.geometry("1200x960")
         self.root.configure(bg="#2b3e50")
         self.root.overrideredirect(True)  # <-- Borderless window
 
@@ -38,15 +42,19 @@ class SimulationUI:
         self.mainFrame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
 
         # ---------------- Left side: Map and nodes ----------------
-        self.leftFrame = tk.Frame(self.mainFrame, width=800, height=600, bd=2, relief=tk.SUNKEN, bg="#33475b")
+        self.leftFrame = tk.Frame(self.mainFrame, width=800, height=800, bd=2, relief=tk.SUNKEN, bg="#33475b")
         self.leftFrame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False, padx=(0, 20))
 
-        self.canvas = Canvas(self.leftFrame, width=800, height=600, bg="#33475b", highlightthickness=0)
-        self.canvas.pack()
+        self.canvas = Canvas(self.leftFrame, width=800, height=800, bg="#33475b", highlightthickness=0)
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        self.graph = self.createRandomTree(numNodes=10)
+        self.loadBackground()
+
+        self.createCityMap()
         self.nodeWidgets = {}
         self.drawGraph()
+
+        self.enableCoordinateClickHelper()
 
         # ---------------- Right side: Stack ----------------
         self.rightFrame = tk.Frame(self.mainFrame, width=400, height=600, padx=10, bg="#2b3e50")
@@ -84,6 +92,13 @@ class SimulationUI:
                                     activebackground="#cc5555", activeforeground="white")
         self.quitButton.grid(row=0, column=1, padx=10)
 
+    def enableCoordinateClickHelper(self):
+        def onCanvasClick(event):
+            x, y = event.x, event.y
+            print(f"Clicked at: ({x}, {y})")
+        
+        self.canvas.bind("<Button-1>", onCanvasClick)   
+
     # --- Dragging functions for the title bar ---
     def startMove(self, event):
         self.x = event.x
@@ -100,48 +115,131 @@ class SimulationUI:
         y = self.root.winfo_y() + deltay
         self.root.geometry(f"+{x}+{y}")
 
-    # --- Random Tree Graph Generation ---
-    def createRandomTree(self, numNodes):
-        tree = nx.Graph()
-        nodes = list(range(numNodes))
-        random.shuffle(nodes)
-        for i in range(1, numNodes):
-            u = nodes[i]
-            v = random.choice(nodes[:i])
-            tree.add_edge(u, v, weight=random.randint(1, 20))
-        return tree
+    def loadBackground(self):
+        baseDir = os.path.dirname(os.path.abspath(__file__))  # path to gui.py
+        path = os.path.join(baseDir, '..', 'assets', 'map.PNG')
+        path = os.path.normpath(path)
+
+        print("Trying to open:", path)  # Debugging
+
+        self.backgroundImage = Image.open(path)
+        self.backgroundImage = self.backgroundImage.resize((800, 850))
+        self.backgroundTk = ImageTk.PhotoImage(self.backgroundImage)
+
+
+
+    def createCityMap(self):
+        self.graph = nx.Graph()
+
+        # ----------- Node positions (x, y) are adjustable here -----------
+        # Feel free to tweak these values to match your map exactly
+        self.nodes = [
+            Node("Node 1 Red", 87, 121, "Red"),
+            Node("Node 2 Red", 650, 121, "Red"),
+            Node("Node 3 Red", 290, 229, "Red"),
+            Node("Node 4 Red", 531, 335, "Red"),
+            Node("Node 5 Red", 87, 437, "Red"),
+            Node("Node 6 Red", 650, 437, "Red"),
+            Node("Node 7 Red", 290, 540, "Red"),
+            Node("Node 8 Red", 531, 645, "Red"),
+            Node("Node 9 Red", 85, 746, "Red"),
+            Node("Node 10 Red", 649, 748, "Red"),
+            Node("Node 11 Blue", 291, 121, "Blue"),
+            Node("Node 12 Blue", 530, 121, "Blue"),
+            Node("Node 13 Blue", 88, 229, "Blue"),
+            Node("Node 14 Blue", 531, 228, "Blue"),
+            Node("Node 15 Blue", 650, 229, "Blue"),
+            Node("Node 16 Blue", 87, 339, "Blue"),
+            Node("Node 17 Blue", 290, 335, "Blue"),
+            Node("Node 18 Blue", 650, 335, "Blue"),
+            Node("Node 19 Blue", 291, 439, "Blue"),
+            Node("Node 20 Blue", 531, 438, "Blue"),
+            Node("Node 21 Blue", 88, 540, "Blue"),
+            Node("Node 22 Blue", 531, 543, "Blue"),
+            Node("Node 23 Blue", 649, 542, "Blue"),
+            Node("Node 24 Blue", 84, 643, "Blue"), ###
+            Node("Node 25 Blue", 531, 747, "Blue"),
+            Node("Node 26 Blue", 150, 500, "Blue"),
+            Node("Node 27 Blue", 650, 500, "Blue"),
+            Node("Node 28 Blue", 400, 630, "Blue"),
+        ]
+
+        # Add nodes to the graph
+        for node in self.nodes:
+            self.graph.add_node(node.nodeId, obj=node)
+
+        # ----------- Edges and Weights -----------
+        edges = [
+            ("Node 1 Red", "Node 11 Blue", 5)#,
+            # ("Node 11 Blue", "Node 2 Red", 6),
+            # ("Node 2 Red", "Node 12 Blue", 4),
+            # ("Node 12 Blue", "Node 3 Red", 5),
+            # ("Node 1 Red", "Node 13 Blue", 8),
+            # ("Node 11 Blue", "Node 14 Blue", 7),
+            # ("Node 12 Blue", "Node 15 Blue", 8),
+            # ("Node 3 Red", "Node 15 Blue", 5),
+            # ("Node 13 Blue", "Node 4 Red", 6),
+            # ("Node 14 Blue", "Node 5 Red", 5),
+            # ("Node 15 Blue", "Node 6 Red", 7),
+            # ("Node 4 Red", "Node 16 Blue", 7),
+            # ("Node 5 Red", "Node 17 Blue", 6),
+            # ("Node 6 Red", "Node 17 Blue", 5),
+            # ("Node 16 Blue", "Node 5 Red", 7),
+            # ("Node 16 Blue", "Node 18 Blue", 5),
+            # ("Node 17 Blue", "Node 19 Blue", 5),
+            # ("Node 19 Blue", "Node 8 Red", 5),
+            # ("Node 18 Blue", "Node 7 Red", 5),
+            # ("Node 19 Blue", "Node 9 Red", 6),
+            # ("Node 7 Red", "Node 26 Blue", 4),
+            # ("Node 26 Blue", "Node 24 Blue", 5),
+            # ("Node 24 Blue", "Node 10 Red", 4),
+            # ("Node 10 Red", "Node 23 Blue", 5),
+            # ("Node 23 Blue", "Node 25 Blue", 5),
+            # ("Node 25 Blue", "Node 9 Red", 5),
+            # ("Node 8 Red", "Node 21 Blue", 5),
+            # ("Node 21 Blue", "Node 22 Blue", 5),
+            # ("Node 22 Blue", "Node 9 Red", 5),
+            # ("Node 10 Red", "Node 28 Blue", 5),
+        ]
+
+        for u, v, weight in edges:
+            self.graph.add_edge(u, v, weight=weight)
+
 
     def drawGraph(self):
-        width = 800
-        height = 600
-        padding = 50
-        positions = {}
-        for node in self.graph.nodes():
-            x = random.randint(padding, width - padding)
-            y = random.randint(padding, height - padding)
-            positions[node] = (x, y)
-        self.positions = positions
+        self.canvas.delete("all")  # Clear previous drawings if any
 
+        # Draw Map
+        self.canvas.create_image(0, 0, image=self.backgroundTk, anchor="nw")
+
+        # Draw edges
         for u, v, data in self.graph.edges(data=True):
-            x1, y1 = positions[u]
-            x2, y2 = positions[v]
-            self.canvas.create_line(x1, y1, x2, y2, fill="white")
+            nodeU = self.graph.nodes[u]['obj']
+            nodeV = self.graph.nodes[v]['obj']
+            x1, y1 = nodeU.x, nodeU.y
+            x2, y2 = nodeV.x, nodeV.y
+
+            self.canvas.create_line(x1, y1, x2, y2, fill="white", width=2)
             midX = (x1 + x2) / 2
             midY = (y1 + y2) / 2
             weight = data['weight']
             self.canvas.create_text(midX, midY, text=str(weight), fill="lightblue", font=("Arial", 10))
 
+        # Draw nodes
         nodeRadius = 15
-        for node, (x, y) in positions.items():
+        self.nodeWidgets = {}
+        for node in self.nodes:
+            fillColor = "#ff4d4d" if node.nodeType == "Red" else "#4da6ff"  # Red or Blue
             oval = self.canvas.create_oval(
-                x - nodeRadius, y - nodeRadius, x + nodeRadius, y + nodeRadius,
-                fill="#4da6ff", outline="white", tags=f"node_{node}"
+                node.x - nodeRadius, node.y - nodeRadius,
+                node.x + nodeRadius, node.y + nodeRadius,
+                fill=fillColor, outline="white", tags=f"node_{node.nodeId}"
             )
-            self.canvas.create_text(x, y, text=str(node), font=("Arial", 10), fill="white")
+            self.canvas.create_text(node.x, node.y, text=node.nodeId.split()[1], font=("Arial", 8), fill="white")
 
-            self.nodeWidgets[node] = oval
-            self.canvas.tag_bind(f"node_{node}", "<Enter>", lambda e, n=node: self.onNodeHover(n))
-            self.canvas.tag_bind(f"node_{node}", "<Leave>", lambda e, n=node: self.onNodeLeave(n))
+            self.nodeWidgets[node.nodeId] = oval
+            self.canvas.tag_bind(f"node_{node.nodeId}", "<Enter>", lambda e, n=node: self.onNodeHover(n.nodeId))
+            self.canvas.tag_bind(f"node_{node.nodeId}", "<Leave>", lambda e, n=node: self.onNodeLeave(n.nodeId))
 
     def insertPlaceholderText(self):
         self.resourcesText.delete("1.0", tk.END)
