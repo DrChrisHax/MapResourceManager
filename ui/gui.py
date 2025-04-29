@@ -12,7 +12,8 @@ from PIL import Image, ImageTk
 temp = "404: Value Not Found"  # Placeholder for resource values
 
 class SimulationUI:
-    def __init__(self):
+    def __init__(self, engine):
+        self.engine = engine
         self.root = tk.Tk()
         self.root.title("Simulation Home Page")
         self.root.geometry("1200x960")
@@ -383,7 +384,8 @@ class SimulationUI:
 
 
     def startSimulation(self):
-        print("Start button clicked! (Simulation not implemented yet)")
+        print("Start button clicked!")
+        self.engine.Start()
         # Testing
         self.testDispatch()
 

@@ -7,7 +7,7 @@ use response(time) with time being 3-4 digit length int
 ({emergency service} , 'address') = response(time)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ <- This is what you retrieve with this file
 """
-from huffman import decode_file
+from algorithms.huffman import decode_file
 
 def analyze_incident(description: str):
     KEYWORDS_TO_SERVICES = {

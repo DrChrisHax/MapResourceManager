@@ -1,4 +1,6 @@
 
+from algorithms.analyzeIncident import response
+
 class SimulationEngine:
     def __init__(self):
         self.inGameTime = 0 #In game minutes
@@ -24,7 +26,12 @@ class SimulationEngine:
             #Generate a log and see if it results
             #in new incident(s) to deal with
             #If it does, add it to the queue of incidents
-            
+
+            try:
+                incident = response(self.inGameTime)
+                print(incident)
+            except:
+                pass #Do Nothing
 
             #Run some code to deal with the incidents
             #self.ScheduleIncidents()
