@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 3
+Time: 617
+Description: A cyclist was hit by a car causing serious leg injuries.
+--- INCIDENT END ---

@@ -1,0 +1,5 @@
+--- INCIDENT START ---
+Address: 8
+Time: 625
+Description: A medical emergency involving breathing difficulties was reported.
+--- INCIDENT END ---
