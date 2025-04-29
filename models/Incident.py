@@ -14,27 +14,22 @@ class Department(Enum):
     MEDICAL     = auto()
     POLICE      = auto()
 
-class Severity(Enum):
-    NOT_IMPORTANT       = auto() #Used for non-incidents
-    MIDLY_IMPORTANT     = auto()
-    IMPORTANT           = auto()
-    SUPER_IMPORTANT     = auto()
-
 class Incident:
     def __init__(
         self,
         incidentType: IncidentType,
         department: Department,
-        severity: Severity,
         location: Tuple[int, int],  #Cordinate Location
         locationName: str,          #Building Name
-        time: int
+        time: int,
+        resourceNeed: int
     ):
         self.incidentType   = incidentType
         self.department     = department
-        self.severity       = severity
         self.location       = location
-        self.time           = time #In game minute when it occured
+        self.locationName   = locationName
+        self.time           = time          #In game minute when it occured
+        self.resourceNeed   = resourceNeed
 
     def __repr__(self) -> str:
         return (
