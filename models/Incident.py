@@ -18,18 +18,20 @@ class Incident:
     def __init__(
         self,
         incidentType: IncidentType,
-        department: Department,
-        location: Tuple[int, int],  #Cordinate Location
-        locationName: str,          #Building Name
-        time: int,
-        resourceNeed: int
+        department: Department,     
+        location: int,              #Node Number
+        locationName: str,          #Building Name (for story purposes)
+        time: int,                  #Time event happened at
+        resourceNeed: int,          #Vehichle Cost
+        timeNeed: int               #Time Cost
     ):
         self.incidentType   = incidentType
         self.department     = department
         self.location       = location
         self.locationName   = locationName
-        self.time           = time          #In game minute when it occured
+        self.time           = time         
         self.resourceNeed   = resourceNeed
+        self.timeNeed = timeNeed
 
     def __repr__(self) -> str:
         return (

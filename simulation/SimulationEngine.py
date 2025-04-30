@@ -1,21 +1,27 @@
-
 from algorithms.analyzeIncident import response
+from simulation.Scheduler import Scheduler
 
 class SimulationEngine:
     def __init__(self):
         self.inGameTime = 0 #In game minutes
-        self.maxTime = 12 * 60 #12 hours per simulated day
+        self.maxTime = 12 * 24 #12 hours per simulated day
         self.day = 1
+        
 
         self.resources = {
-            'police': [],
-            'fire': [],
-            'medical': []
+            'police': [1, 2, 3, 4],
+            'fire': [5, 6, 7, 8],
+            'medical': [9, 10, 11, 12]
         }
 
-        #TODO: Uncomment after implemented by Adam and Daniel
-        #self.map = Map()
-        #self.logginSystem = LogginSystem()
+        self.stationNodes = {
+            'police': 1,
+            'fire': 1,
+            'medical': 1
+        }
+
+        self.scheduler = Scheduler(engine=self, stationNodes=self.stationNodes)
+
 
     def Start(self):
         #Starts the simulation for the in game day
@@ -33,20 +39,15 @@ class SimulationEngine:
             except:
                 pass #Do Nothing
 
-            #Run some code to deal with the incidents
-            #self.ScheduleIncidents()
-
-            #Tell the map about the locations of all the vehicles
-
             #Increment the time
             self.inGameTime += 1
 
-            #Tell the map to update its time
 
         print(f"Day {self.day} done")
         self.day += 1
 
-            
 
-    def ScheduleIncidents(self):
-        print("Not Implemented Yet")
+    def TravelCost(self, startNode: int, endNode: int) -> int:
+        #TODO: Connect this to the dijkstra algorithm
+        return 10 
+    
