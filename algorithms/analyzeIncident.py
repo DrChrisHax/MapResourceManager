@@ -9,6 +9,21 @@ use response(time) with time being 3-4 digit length int
 """
 from algorithms.huffman import decode_file
 
+def convert_time(p : int):
+    carry = 0
+    minutes = p % 100
+    if minutes >= 60:
+        carry = 1
+        minutes -= 60
+    hours = p // 100 + carry
+    if hours >= 25:
+        print("Entered time exceeds 25 hours")
+        raise Exception
+    return (hours * 100) + minutes
+
+def checkForIncident(time):
+    return False #To change, only returns false atm
+
 def analyze_incident(description: str):
     KEYWORDS_TO_SERVICES = {
         "fire": {"fire"},
