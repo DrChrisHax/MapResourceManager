@@ -1,10 +1,12 @@
 from algorithms.analyzeIncident import response
+from algorithms.dijkstra import dijkstraPath
 from simulation.Scheduler import Scheduler
+from ui.gui import SimulationUI
 
 class SimulationEngine:
     def __init__(self):
         self.inGameTime = 0 #In game minutes
-        self.maxTime = 12 * 24 #12 hours per simulated day
+        self.maxTime = 24 * 60 #24 hours per simulated day
         self.day = 1
         
 
@@ -21,7 +23,11 @@ class SimulationEngine:
         }
 
         self.scheduler = Scheduler(engine=self, stationNodes=self.stationNodes)
+        self.ui = SimulationUI(self)
+        self.graphDict = self.ui.graphToDict()
 
+    def run(self):
+        self.ui.run()
 
     def Start(self):
         #Starts the simulation for the in game day
@@ -48,6 +54,6 @@ class SimulationEngine:
 
 
     def TravelCost(self, startNode: int, endNode: int) -> int:
-        #TODO: Connect this to the dijkstra algorithm
-        return 10 
+        return dijkstraPath(self.graphDict, startNode, endNode)
+        
     

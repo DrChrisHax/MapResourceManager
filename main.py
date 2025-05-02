@@ -5,9 +5,7 @@ from ui.gui import SimulationUI
 
 def main():
     engine = SimulationEngine()
-    app = SimulationUI(engine)
-    app.run()
-
+    engine.run()
 
 if __name__ == "__main__":
     main()
