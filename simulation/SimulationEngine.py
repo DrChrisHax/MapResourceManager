@@ -53,7 +53,7 @@ class SimulationEngine:
         self.day += 1
 
 
-    def TravelCost(self, startNode: int, endNode: int) -> int:
+    def TravelCostAndPath(self, startNode: int, endNode: int) -> int:
         return dijkstraPath(self.graphDict, startNode, endNode)
         
     

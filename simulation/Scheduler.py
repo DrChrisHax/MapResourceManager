@@ -34,15 +34,92 @@ class Scheduler:
 
     def AddIncident(self, incident: Incident) -> None:
         self.pending.append(incident)
+    
+    def FindAvailableVehicles(self, currentTime: int) -> List[Vehicle]:
+        return [v for v in self.vehicles if v.availableAt <= currentTime]
+    
+    def ComputerTravelTime(self, vehicle: Vehicle, node: int) -> int:
+        return self.engine.TravelCostAndPath(vehicle.currentLocation, node).first()
+    
+    def RateIncident(self, incident: Incident, avail: List[Vehicle], currentTime: int):
+        #Scores incidents for schedling
+        #Metrics include:
+        #Vehicle resources needs
+        #Time for furthest chosen last needed vehicle to get there
+        #Time the incident will take to be completed
+        #TIme the incident has been active for
 
+        k = incident.resourceNeed
+        if k > len(avail):
+            return None #Not enough resources to help this incident
+        
+        #Compute and store the travel times for this incident
+        travelList: List[Tuple[Vehicle, int]] = [(v, self.ComputerTravelTime(v, incident.location)) for v in avail]
+        travelList.sort(key=lambda x: x[1])
+        chosenPairs = travelList[:k]
+        chosenVehicles = [v for v, _ in chosenPairs]
+
+        maxTravel = chosenPairs[-1][1]
+        waitTime = currentTime - incident.time
+        totalTime = maxTravel + incident.timeNeed
+
+        #score = vehicles * (wait_time + 1) / totalTime
+        score = k * (waitTime + 1) / totalTime
+
+        return(incident, chosenVehicles, score, maxTravel, waitTime)
+    
+    def SelectIncidents(self, currentTime: int) -> List[Tuple[Incident, List[Vehicle]]]:
+        avail = self.FindAvailableVehicles(currentTime)
+        scored = []
+        for inc in self.pending:
+            r = self.RateIncident(inc, avail, currentTime)
+            if r:
+                scored.append(r)
+
+        #Sort by best score, then fewer vehicles (tie-breaker)
+        scored.sort(key=lambda x: (x[2], -len(x[1])), reverse=True)
+
+        assignments = []
+        used = set()
+        cap = len(avail)
+
+        for inc, vehs, _, _, _ in scored:
+            if any(v in used for v in vehs):
+                continue
+            if len(used + len(vehs)) > cap:
+                continue
+            assignments.append((inc, vehs))
+            for v in vehs:
+                used.add(v)
+
+        return assignments
+    
     def Schedule(self, currentTime: int) -> List[Tuple[int, int]]:
-        """
-        Assign available vehicles to pending incidents at the given game time.
-        Returns a list of (startNode, endNode) tuples for dispatch
+        #Assigns vehicles to as many incidents as possible this tick
+        #returns a list of (startNode, endNode) for each dispatched vehicle
 
-        - A vehicle is available if its availableAt <= currentTime
-        - Travel time to incident  engine.travelCost(start, end)
-        - Handing time per incident = incident.timeNeed
-        - Vehicle.currentLocation updates to incident.location after passing through
-          all relevant nodes
-        """ 
+        dispatches: List[Tuple[int, int]] =[]
+        assignments = self.SelectIncidents(currentTime)
+
+        for inc, vehs in assignments:
+            travelTime = [self.ComputerTravelTime(v, inc.location) for v in vehs]
+            maxTravel = max(travelTime) if travelTime else 0
+
+            #Each vehicle needs to travel there, wait for everyone to be there, then service the incident
+            serviceEnd = currentTime + maxTravel + inc.timeNeed
+
+            for v in vehs:
+                start = v.currentLocation
+                #Mark vehicle unavailable until serviceEnd
+                v.availableAt = serviceEnd
+                v.currentLocation = inc.location
+                dispatches.append((start, inc.location))
+
+            self.pending.remove(inc)
+
+        return dispatches
+                
+
+
+    
+
