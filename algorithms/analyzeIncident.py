@@ -1,13 +1,8 @@
-"""
-HOW TO USE:
-from algorithms.analyzeIncident import response
-
-use response(time) with time being 3-4 digit length int
-
-({emergency service} , 'address') = response(time)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ <- This is what you retrieve with this file
-"""
+import os
 from algorithms.huffman import decode_file
+from models.Incident import Incident, IncidentType, Department
+import random
+
 
 def convert_time(p : int):
     carry = 0
@@ -16,13 +11,79 @@ def convert_time(p : int):
         carry = 1
         minutes -= 60
     hours = p // 100 + carry
-    if hours >= 25:
-        print("Entered time exceeds 25 hours")
+    if hours >= 24:
+        print("Entered time exceeds 24 hours")
         raise Exception
     return (hours * 100) + minutes
 
-def checkForIncident(time):
-    return False #To change, only returns false atm
+def checkForIncident(time: int):
+    try:
+        time = convert_time(time)
+    except:
+        return None
+
+    logs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
+    bin_path = os.path.join(logs_dir, f"{time}.bin")
+    if not os.path.exists(bin_path):
+        return None
+    chance = random.randint(1,2)
+    if chance == 1:
+        return None
+
+    description = decode_file(time)
+    address = extract_address(description)
+    services = analyze_incident(description)
+    severity = getSeverity(description)
+
+    type_map = {
+        "fire": IncidentType.HOUSE_FIRE,
+        "smoke": IncidentType.SMOKE,
+        "gas leak": IncidentType.GAS_LEAK,
+        "explosion": IncidentType.EXPLOSION,
+        "drowning": IncidentType.DROWNING,
+        "overdose": IncidentType.OVERDOSE,
+        "heart attack": IncidentType.HEART_ATTACK,
+        "breathing": IncidentType.BREATHING_ISSUE,
+        "unconscious": IncidentType.UNCONSCIOUS,
+        "injury": IncidentType.INJURY,
+        "injuries": IncidentType.INJURY,
+        "collision": IncidentType.COLLISION,
+        "accident": IncidentType.ACCIDENT,
+        "robbery": IncidentType.ROBBERY,
+        "theft": IncidentType.THEFT,
+        "break-in": IncidentType.BREAK_IN,
+        "assault": IncidentType.ASSAULT,
+        "bomb threat": IncidentType.BOMB_THREAT
+    }
+    incident_type = IncidentType.NONE
+    for keyword, type_val in type_map.items():
+        if rabin_karp_search(desc_lower, keyword):
+            incident_type = type_val
+            break
+
+    if "fire" in services:
+        department = Department.FIRE
+    elif "ambulance" in services:
+        department = Department.MEDICAL
+    elif "police" in services:
+        department = Department.POLICE
+    else:
+        department = Department.NONE
+
+    all_keywords = list(getSeverity.__annotations__['return'].__args__[0].__args__)
+    keyword_hits = {}
+    desc_lower = description.lower()
+    return Incident(
+        incidentType=incident_type,
+        department=department,
+        location=address,
+        locationName = "Residence",
+        time=time,
+        resourceNeed=len(services),
+        timeNeed=severity * 5,
+        description=description,
+    )
+    
 
 def analyze_incident(description: str):
     KEYWORDS_TO_SERVICES = {
@@ -90,8 +151,71 @@ def extract_address(description: str):
     
     return description[start_pos:end_pos].strip()
 
-def response(time : int):
-    desc = decode_file(time)
-    return analyze_incident(desc), extract_address(desc)
 
-#print(response(129)) - test
+#Knuth Morris Pratt
+def computer_lps(pattern):
+    m = len(pattern)
+    lps = [0] * m
+    length = 0 #Length of previous longest prefix suffix
+    i = 1
+
+    while i < m:
+        if pattern[i] == pattern[length]:
+            length += 1
+            lps[i] = length
+            i += 1
+        else:
+            if length != 0:
+                length = lps[length - 1]
+            else:
+                lps[i] = 0
+                i += i
+    return lps
+
+def Knuth_morris_pratt(text, pattern):
+    n, m = len(text), len(pattern)
+    lps = computer_lps(pattern)
+    i = j = 0
+    positions = []
+
+    while i < n:
+        if text[i] == pattern[j]:
+            i += 1
+            j += 1
+        if j == m:
+            positions.append(i - j) #match found
+            j = lps[j - 1] #Continue searching
+        elif i < n and pattern[j] != text[i]:
+            j = lps[j - 1] if j != 0 else 0
+            if j == 0:
+                i += 1
+    return positions
+
+def getSeverity(desc):
+    KEYWORDS_TO_SEVERITY = {
+        "fire": {2},
+        "smoke": {1},
+        "gas leak": {1},
+        "explosion": {3},
+        "drowning": {1},
+        "overdose": {2},
+        "heart attack": {1},
+        "breathing": {1},
+        "unconscious": {1},
+        "injury": {1},
+        "injuries": {2},
+        "collision": {2},
+        "accident": {1},
+        "robbery": {3},
+        "theft": {2},
+        "break-in": {1},
+        "assault": {1},
+        "bomb threat": {3}
+    }
+    totalseverity = 0
+    description_l = desc.lower()
+    for keyword, severity in KEYWORDS_TO_SEVERITY.items():
+        if len(description_l) >= len(keyword):
+            if Knuth_morris_pratt(description_l, keyword):
+                totalseverity += severity
+    return totalseverity

@@ -11,6 +11,25 @@ class Node:
 
     def __lt__(self, other):
         return self.freq < other.freq
+    
+def build_shared_code_table(logs_dir):
+    """Build a global Huffman codebook from all .txt logs"""
+    full_text = ""
+    for filename in os.listdir(logs_dir):
+        if filename.endswith('.txt'):
+            with open(os.path.join(logs_dir, filename), 'r', encoding='utf-8') as file:
+                full_text += file.read()
+
+    freq_table = build_frequency_table(full_text)
+    tree = build_huffman_tree(freq_table)
+    code_table = build_codes(tree)
+
+    dict_path = os.path.join(logs_dir, "huffman.dict")
+    with open(dict_path, 'w', encoding='utf-8') as f:
+        json.dump(code_table, f)
+
+    print("[+] Shared Huffman dictionary saved to", dict_path)
+    return code_table
 
 def build_frequency_table(text):
     freq_table = {}
@@ -66,13 +85,9 @@ def get_byte_array(padded_encoded_text):
         byte_array.append(int(byte_chunk, 2))
     return byte_array
 
-def encode_file(input_path):
+def encode_file(input_path, code_table):
     with open(input_path, 'r', encoding='utf-8') as file:
         text = file.read()
-
-    freq_table = build_frequency_table(text)
-    huffman_tree = build_huffman_tree(freq_table)
-    code_table = build_codes(huffman_tree)
 
     encoded_text = "".join(code_table[char] for char in text)
     padded_encoded_text = pad_encoded_text(encoded_text)
@@ -81,15 +96,11 @@ def encode_file(input_path):
     dir_name = os.path.dirname(input_path)
     base_name = os.path.splitext(os.path.basename(input_path))[0]
     bin_path = os.path.join(dir_name, base_name + ".bin")
-    dict_path = os.path.join(dir_name, base_name + ".dict")
 
     with open(bin_path, 'wb') as bin_file:
         bin_file.write(byte_array)
 
-    with open(dict_path, 'w', encoding='utf-8') as dict_file:
-        json.dump(code_table, dict_file)
-
-    print(f"[+] Encoded and saved {bin_path} and {dict_path}")
+    print(f"[+] Encoded and saved {bin_path}")
 
 
 def remove_padding(padded_encoded_text):
@@ -103,9 +114,8 @@ def remove_padding(padded_encoded_text):
 
 def decode_file(time: int):
     logs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
-    
     bin_path = os.path.join(logs_dir, f"{time}.bin")
-    dict_path = os.path.join(logs_dir, f"{time}.dict")
+    dict_path = os.path.join(logs_dir, "huffman.dict")
 
     with open(bin_path, 'rb') as bin_file:
         bit_string = ""
@@ -120,8 +130,8 @@ def decode_file(time: int):
         code_table = json.load(dict_file)
 
     reversed_code_table = {v: k for k, v in code_table.items()}
-
     encoded_text = remove_padding(bit_string)
+
     current_code = ""
     decoded_text = ""
 
@@ -135,27 +145,28 @@ def decode_file(time: int):
 
 
 def batch_encode_logs():
-    # Find logs folder relative to this file
     logs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
 
     if not os.path.exists(logs_dir):
         print(f"Error: Directory {logs_dir} does not exist.")
         return
 
+    print("[*] Building shared Huffman dictionary...")
+    code_table = build_shared_code_table(logs_dir)
+
     for filename in os.listdir(logs_dir):
         if filename.endswith('.txt'):
             base_name = os.path.splitext(filename)[0]
             bin_path = os.path.join(logs_dir, base_name + ".bin")
-            dict_path = os.path.join(logs_dir, base_name + ".dict")
 
-            if os.path.exists(bin_path) and os.path.exists(dict_path):
+            if os.path.exists(bin_path):
                 print(f"[!] Skipping {filename} (already encoded)")
                 continue
 
             filepath = os.path.join(logs_dir, filename)
             print(f"[*] Encoding {filepath}...")
-            encode_file(filepath)
+            encode_file(filepath, code_table)
 
     print("[+] All .txt logs encoded successfully.")
 
-#batch_encode_logs() - Call to encode all text files in logs/
+#batch_encode_logs() # Call to encode all text files in logs/
