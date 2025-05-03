@@ -53,7 +53,7 @@ class Incident:
             f"<Incident "
             f"type={self.incidentType.name} "
             f"dept={self.department.name} "
-            f"severity={self.severity.name} "
-            f"time={self.time} "
+            f"Vehicle need={self.resourceNeed} "
+            f"Time need={self.timeNeed} "
             f"location={self.locationName} at {self.location}>"
         )
