@@ -12,7 +12,7 @@ class Vehicle:
     def __repr__(self):
         return (
             f"<Vehicle id={self.id} dept={self.department.name} "
-            f"loc={self.current_location} free_at={self.available_at}>"
+            f"loc={self.currentLocation} free_at={self.availableAt}>"
         )
     
 class Scheduler:
@@ -24,8 +24,7 @@ class Scheduler:
 
         #Init Vehicle objects from eninge.resources
         #engine resource keys are dept names in lowercase
-        for deptKey, vehList in engine.resources.items():
-            dept = Department[deptKey.upper()]
+        for dept, vehList in engine.resources.items():
             station = stationNodes.get(dept, 0)
             for idx in range(len(vehList)):
                 vid = len(self.vehicles)
@@ -39,8 +38,9 @@ class Scheduler:
         return [v for v in self.vehicles if v.availableAt <= currentTime]
     
     def ComputerTravelTime(self, vehicle: Vehicle, node: int) -> int:
-        return self.engine.TravelCostAndPath(vehicle.currentLocation, node).first()
-    
+        temp = self.engine.TravelCostAndPath(vehicle.currentLocation, node)
+        return temp[0]
+
     def RateIncident(self, incident: Incident, avail: List[Vehicle], currentTime: int):
         #Scores incidents for schedling
         #Metrics include:
@@ -50,23 +50,33 @@ class Scheduler:
         #TIme the incident has been active for
 
         k = incident.resourceNeed
+
+        #Only check vehicles for the correct department
+        deptAvail = [v for v in avail if v.department == incident.department]
         if k > len(avail):
             return None #Not enough resources to help this incident
         
-        #Compute and store the travel times for this incident
-        travelList: List[Tuple[Vehicle, int]] = [(v, self.ComputerTravelTime(v, incident.location)) for v in avail]
-        travelList.sort(key=lambda x: x[1])
-        chosenPairs = travelList[:k]
-        chosenVehicles = [v for v, _ in chosenPairs]
+        #Grab the integer node for the location object
+        nodeID = incident.location
 
-        maxTravel = chosenPairs[-1][1]
+        travelList = []
+        for v in deptAvail:
+            t = self.ComputerTravelTime(v, nodeID)
+            if t is not None:
+                travelList.append((v, t))
+        if len(travelList) < k:
+            return None
+        
+        #Score
+        travelList.sort(key=lambda pair: pair[1])
+        chosen = travelList[:k]
+        chosenVehicles, times = zip(*chosen)
+        maxTravel = times[-1]
         waitTime = currentTime - incident.time
         totalTime = maxTravel + incident.timeNeed
-
-        #score = vehicles * (wait_time + 1) / totalTime
         score = k * (waitTime + 1) / totalTime
 
-        return(incident, chosenVehicles, score, maxTravel, waitTime)
+        return incident, list(chosenVehicles), score, maxTravel, waitTime
     
     def SelectIncidents(self, currentTime: int) -> List[Tuple[Incident, List[Vehicle]]]:
         avail = self.FindAvailableVehicles(currentTime)
@@ -86,7 +96,7 @@ class Scheduler:
         for inc, vehs, _, _, _ in scored:
             if any(v in used for v in vehs):
                 continue
-            if len(used + len(vehs)) > cap:
+            if len(used) + len(vehs) > cap:
                 continue
             assignments.append((inc, vehs))
             for v in vehs:
@@ -118,8 +128,4 @@ class Scheduler:
             self.pending.remove(inc)
 
         return dispatches
-                
-
-
-    
 
