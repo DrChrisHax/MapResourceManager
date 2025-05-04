@@ -4,6 +4,11 @@ import networkx as nx
 import random
 import os
 
+# For testing
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# End of Testing
+
 from algorithms.dijkstra import dijkstraPath
 
 from models.node import Node
@@ -94,6 +99,29 @@ class SimulationUI:
                                     bg="#ff6666", fg="white", font=("Helvetica", 12, "bold"), width=20,
                                     activebackground="#cc5555", activeforeground="white")
         self.quitButton.grid(row=0, column=1, padx=10)
+
+        # --- Clock and Step Button ---
+        self.clockTime = 0  # in minutes
+
+        # Container to help center clock and step button together
+        self.clockFrame = tk.Frame(self.titleBar, bg="#1f2d3a")
+        self.clockFrame.pack(side=tk.TOP, pady=0, expand=True)
+
+        self.clockLabel = tk.Label(self.clockFrame, text="Time: 00:00", bg="#1f2d3a", fg="white", font=("Helvetica", 12))
+        self.clockLabel.pack(side=tk.LEFT, padx=5)
+
+        # Testing purposes: increment clock by 1 minute
+        self.stepButton = tk.Button(self.clockFrame, text="⏱️ +1 min", command=self.incrementClock,
+                                    bg="#4da6ff", fg="white", font=("Helvetica", 10), bd=0,
+                                    activebackground="#3399ff", activeforeground="white")
+        self.stepButton.pack(side=tk.LEFT, padx=5)
+        # End of Testing
+
+
+    def incrementClock(self):
+        self.clockTime = (self.clockTime + 1) % 1440  # Wraps after 1440 mins (24h) <-- This is where it increments
+        hours, minutes = divmod(self.clockTime, 60)
+        self.clockLabel.config(text=f"Time: {hours:02d}:{minutes:02d}")
 
     def enableCoordinateClickHelper(self):
         def onCanvasClick(event):
@@ -305,6 +333,38 @@ class SimulationUI:
         self.incidentsText.delete("1.0", tk.END)
         self.incidentsText.insert(tk.END, "Please Enter Address,\nType of Incident,\nTime of Incident,\nPriority")
 
+    def updateDashboard(self, policeCount: int, fireCount: int, medicalCount: int,
+                    address: str, incidentType: str, time: str, priority: str):
+        """
+        Update the resources and incidents text boxes with provided values.
+        Can be called by the engine.
+        """
+        self.resourcesText.delete("1.0", tk.END)
+        self.resourcesText.insert(
+            tk.END,
+            f"Police: {policeCount}\nFire: {fireCount}\nMedical: {medicalCount}"
+        )
+
+        self.incidentsText.delete("1.0", tk.END)
+        self.incidentsText.insert(
+            tk.END,
+            f"Address: {address}\nType: {incidentType}\nTime: {time}\nPriority: {priority}"
+        )
+
+    # Testing Purposes
+    def testUpdateDashboard(self):
+        self.updateDashboard(
+            policeCount=3,
+            fireCount=2,
+            medicalCount=1,
+            address="123 Elm Street",
+            incidentType="Fire",
+            time="14:30",
+            priority="High"
+    )
+    # End of Testing
+
+
     def onNodeHover(self, node):
         oval = self.nodeWidgets.get(node)
         if oval:
@@ -328,31 +388,32 @@ class SimulationUI:
             print("No path to animate.")
             return
 
-        radius = 8
+        # Map resource types to sprite file paths
+        spritePathMap = {
+            1: "../assets/ambulance.png",
+            2: "../assets/police.png",
+            3: "../assets/firetruck.png",
+            0: "../assets/generic.png"
+        }
 
-        # Decide sprite color based on type
-        if resourceType == 1:      # Ambulance
-            color = "white"
-            outline = "red"
-        elif resourceType == 2:    # Police
-            color = "blue"
-            outline = "white"
-        elif resourceType == 3:    # Firetruck
-            color = "orange"
-            outline = "darkred"
-        else:                      # Generic
-            color = "yellow"
-            outline = ""
+        spritePath = spritePathMap.get(resourceType, "../assets/generic.png")
 
-        # Start at first node
+        try:
+            image = Image.open(os.path.join(os.path.dirname(__file__), spritePath))
+            image = image.resize((30, 30), Image.Resampling.LANCZOS)  # Use .Resampling.LANCZOS for Pillow >=10
+            spriteImg = ImageTk.PhotoImage(image)
+        except Exception as e:
+            print("Error loading sprite image:", e)
+            return
+
+        # Store image reference to prevent garbage collection
+        self.spriteImg = spriteImg
+
+        # Place the sprite at the start node
         startNode = self.graph.nodes[path[0]]['obj']
-        sprite = self.canvas.create_oval(
-            startNode.x - radius, startNode.y - radius,
-            startNode.x + radius, startNode.y + radius,
-            fill=color, outline=outline, width=2
-        )
+        sprite = self.canvas.create_image(startNode.x, startNode.y, image=spriteImg)
 
-        # Move sprite along path
+        # Move the sprite along the path
         for i in range(len(path) - 1):
             fromNode = self.graph.nodes[path[i]]['obj']
             toNode = self.graph.nodes[path[i + 1]]['obj']
@@ -386,8 +447,20 @@ class SimulationUI:
     def startSimulation(self):
         print("Start button clicked!")
         self.engine.Start()
-        # Testing
+        # Testing Purposes
         self.testDispatch()
+        self.testUpdateDashboard()  
+        # End of Testing
 
     def run(self):
         self.root.mainloop()
+
+# Testing Purposes
+if __name__ == "__main__":
+    class MockEngine:
+        def Start(self):
+            print("MockEngine.Start() called")
+
+    ui = SimulationUI(MockEngine())
+    ui.run()
+# End of Testing
