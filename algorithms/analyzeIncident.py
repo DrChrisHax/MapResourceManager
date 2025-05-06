@@ -199,11 +199,11 @@ def checkForIncident(time : int):
 
     return [Incident(
         incidentType=incident_type,
-        department=services,
+        department=primary_department,
         location=address,
         locationName = "Residence",
         time=time,
-        resourceNeed=primary_department,
+        resourceNeed=severity,
         timeNeed=severity * 5,
         description=description,
     )]

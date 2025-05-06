@@ -39,7 +39,7 @@ class Scheduler:
     
     def ComputerTravelTime(self, vehicle: Vehicle, node: int) -> int:
         temp = self.engine.TravelCostAndPath(vehicle.currentLocation, node)
-        return temp[0]
+        return temp
 
     def RateIncident(self, incident: Incident, avail: List[Vehicle], currentTime: int):
         #Scores incidents for schedling

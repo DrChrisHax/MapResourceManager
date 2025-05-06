@@ -65,7 +65,7 @@ class SimulationEngine:
 
     def TravelCostAndPath(self, startNode: int, endNode: int) -> int:
         path, cost = dijkstraPath(self.graphDict, startNode, endNode)
-        return path
+        return cost
     
         
     
