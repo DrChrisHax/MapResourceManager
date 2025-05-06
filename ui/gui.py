@@ -95,7 +95,8 @@ class SimulationUI:
         self.startButton = tk.Button(self.buttonFrame, text="Start Simulation", command=self.startSimulation,
                                      bg="#4da6ff", fg="white", font=("Helvetica", 12, "bold"), width=20,
                                      activebackground="#3399ff", activeforeground="white")
-        # self.startButton.grid(row=0, column=0, padx=10)
+        # comment out for testing purposes
+        self.startButton.grid(row=0, column=0, padx=10)
 
         self.quitButton = tk.Button(self.buttonFrame, text="Quit", command=self.root.quit,
                                     bg="#ff6666", fg="white", font=("Helvetica", 12, "bold"), width=20,
@@ -522,8 +523,8 @@ class SimulationUI:
         print("Start button clicked!")
         self.engine.Start()
         # Testing Purposes
-        self.testDispatch()
-        self.testUpdateDashboard()  
+        # self.testDispatch()
+        # self.testUpdateDashboard()  
         # End of Testing
 
     def run(self):

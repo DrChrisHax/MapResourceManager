@@ -39,7 +39,14 @@ class Scheduler:
     
     def ComputerTravelTime(self, vehicle: Vehicle, node: int) -> int:
         temp = self.engine.TravelCostAndPath(vehicle.currentLocation, node)
-        return temp[0]
+        
+        if temp is None:
+            # Handle the case where temp is None
+            print(f"Error: TravelCostAndPath returned None for vehicle at {vehicle.currentLocation} to node {node}")
+            return 0  # Or handle with a fallback value like 0 or some appropriate response
+        
+        return temp[0]  # Proceed as usual if temp is not None
+
 
     def RateIncident(self, incident: Incident, avail: List[Vehicle], currentTime: int):
         #Scores incidents for schedling
@@ -68,7 +75,8 @@ class Scheduler:
             return None
         
         #Score
-        travelList.sort(key=lambda pair: pair[1])
+        print(f"travelList before sorting: {travelList}")
+        travelList.sort(key=lambda pair: int(pair[1]) if isinstance(pair[1], str) else pair[1])
         chosen = travelList[:k]
         chosenVehicles, times = zip(*chosen)
         maxTravel = times[-1]

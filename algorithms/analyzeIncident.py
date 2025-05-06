@@ -17,6 +17,26 @@ def convert_time(p : int):
     return (hours * 100) + minutes
 
 def checkForIncident(time: int):
+    KEYWORDS_TO_SEVERITY = {
+        "fire": 2,
+        "smoke": 1,
+        "gas leak": 1,
+        "explosion": 3,
+        "drowning": 1,
+        "overdose": 2,
+        "heart attack": 1,
+        "breathing": 1,
+        "unconscious": 1,
+        "injury": 1,
+        "injuries": 2,
+        "collision": 2,
+        "accident": 1,
+        "robbery": 3,
+        "theft": 2,
+        "break-in": 1,
+        "assault": 1,
+        "bomb threat": 3
+    }
     try:
         time = convert_time(time)
     except:
@@ -31,6 +51,12 @@ def checkForIncident(time: int):
         return []
 
     description = decode_file(time)
+
+    if description:
+        desc_lower = description.lower()  # Ensure it's in lowercase
+    else:
+        return []
+
     address = extract_address(description)
     services = analyze_incident(description)
     severity = getSeverity(description)
@@ -70,10 +96,10 @@ def checkForIncident(time: int):
     else:
         department = Department.NONE
 
-    all_keywords = list(getSeverity.__annotations__['return'].__args__[0].__args__)
-    keyword_hits = {}
-    desc_lower = description.lower()
-    return Incident(
+    all_keywords = list(KEYWORDS_TO_SEVERITY.keys())
+    # keyword_hits = {}
+    #desc_lower = description.lower()
+    return [Incident(
         incidentType=incident_type,
         department=department,
         location=address,
@@ -82,7 +108,7 @@ def checkForIncident(time: int):
         resourceNeed=len(services),
         timeNeed=severity * 5,
         description=description,
-    )
+    )]
     
 
 def analyze_incident(description: str):
@@ -191,7 +217,7 @@ def Knuth_morris_pratt(text, pattern):
                 i += 1
     return positions
 
-def getSeverity(desc):
+def getSeverity(desc: str) -> int:
     KEYWORDS_TO_SEVERITY = {
         "fire": 2,
         "smoke": 1,
