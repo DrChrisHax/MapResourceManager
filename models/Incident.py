@@ -49,10 +49,14 @@ class Incident:
         self.description = description
 
     def __repr__(self) -> str:
+        if isinstance(self.department, set):
+            dept_names = ", ".join(d.name for d in self.department)
+        else:
+            dept_names = self.department.name
         return (
             f"<Incident "
             f"type={self.incidentType.name} "
-            f"dept={self.department.name} "
+            f"dept={dept_names} "
             f"Vehicle need={self.resourceNeed} "
             f"Time need={self.timeNeed} "
             f"location={self.locationName} at {self.location}>"

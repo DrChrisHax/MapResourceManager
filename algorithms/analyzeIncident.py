@@ -17,31 +17,31 @@ def convert_time(p : int):
 
 def analyze_incident(description: str):
     KEYWORDS_TO_SERVICES = {
-        "fire": {"fire"},
-        "smoke": {"fire"},
-        "gas leak": {"fire"},
-        "explosion": {"fire"},
-        "drowning": {"ambulance"},
-        "overdose": {"ambulance"},
-        "heart attack": {"ambulance"},
-        "breathing": {"ambulance"},
-        "unconscious": {"ambulance"},
-        "injury": {"ambulance"},
-        "injuries": {"ambulance"},
-        "collision": {"ambulance"},
-        "accident": {"ambulance"},
-        "robbery": {"police"},
-        "theft": {"police"},
-        "break-in": {"police"},
-        "assault": {"police"},
-        "bomb threat": {"police"}
+        "fire": Department.FIRE,
+        "smoke": Department.FIRE,
+        "gas leak": Department.FIRE,
+        "explosion": Department.FIRE,
+        "drowning": Department.MEDICAL,
+        "overdose": Department.MEDICAL,
+        "heart attack": Department.MEDICAL,
+        "breathing": Department.MEDICAL,
+        "unconscious": Department.MEDICAL,
+        "injury": Department.MEDICAL,
+        "injuries": Department.MEDICAL,
+        "collision": Department.MEDICAL,
+        "accident": Department.MEDICAL,
+        "robbery": Department.POLICE,
+        "theft": Department.POLICE,
+        "break-in": Department.POLICE,
+        "assault": Department.POLICE,
+        "bomb threat": Department.POLICE
     }
     services_needed = set()
     description_l = description.lower()
     for keyword, services in KEYWORDS_TO_SERVICES.items():
         if len(description_l) >= len(keyword):
             if rabin_karp_search(description_l, keyword):
-                services_needed.update(services)
+                services_needed.add(services)
     return services_needed
 
 def rabin_karp_search(desc, keyw, q=101):
@@ -175,7 +175,7 @@ def getIncidentType(desc : str):
     if len(locations) == 0:
         return IncidentType.NONE
     else:
-        return locations[0]
+        return type_map[locations[0]]
 
 def checkForIncident(time : int):
     time = convert_time(time)
@@ -190,17 +190,20 @@ def checkForIncident(time : int):
     description = decode_file(time)
     incident_type = getIncidentType(description)
     address = extract_address(description)
-    department = analyze_incident(description)
+    services = analyze_incident(description)
+    if not services:
+        return []
+    primary_department = next(iter(services))
     severity = getSeverity(description)
     
 
     return [Incident(
         incidentType=incident_type,
-        department=department,
+        department=services,
         location=address,
         locationName = "Residence",
         time=time,
-        resourceNeed=severity,
+        resourceNeed=primary_department,
         timeNeed=severity * 5,
         description=description,
     )]
