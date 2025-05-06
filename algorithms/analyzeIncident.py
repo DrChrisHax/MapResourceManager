@@ -3,7 +3,6 @@ from algorithms.huffman import decode_file
 from models.Incident import Incident, IncidentType, Department
 import random
 
-
 def convert_time(p : int):
     carry = 0
     minutes = p % 100
@@ -15,75 +14,6 @@ def convert_time(p : int):
         print("Entered time exceeds 24 hours")
         raise Exception
     return (hours * 100) + minutes
-
-def checkForIncident(time: int):
-    try:
-        time = convert_time(time)
-    except:
-        return []
-
-    logs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
-    bin_path = os.path.join(logs_dir, f"{time}.bin")
-    if not os.path.exists(bin_path):
-        return []
-    chance = random.randint(1,2)
-    if chance == 1:
-        return []
-
-    description = decode_file(time)
-    address = extract_address(description)
-    services = analyze_incident(description)
-    severity = getSeverity(description)
-
-    type_map = {
-        "fire": IncidentType.HOUSE_FIRE,
-        "smoke": IncidentType.SMOKE,
-        "gas leak": IncidentType.GAS_LEAK,
-        "explosion": IncidentType.EXPLOSION,
-        "drowning": IncidentType.DROWNING,
-        "overdose": IncidentType.OVERDOSE,
-        "heart attack": IncidentType.HEART_ATTACK,
-        "breathing": IncidentType.BREATHING_ISSUE,
-        "unconscious": IncidentType.UNCONSCIOUS,
-        "injury": IncidentType.INJURY,
-        "injuries": IncidentType.INJURY,
-        "collision": IncidentType.COLLISION,
-        "accident": IncidentType.ACCIDENT,
-        "robbery": IncidentType.ROBBERY,
-        "theft": IncidentType.THEFT,
-        "break-in": IncidentType.BREAK_IN,
-        "assault": IncidentType.ASSAULT,
-        "bomb threat": IncidentType.BOMB_THREAT
-    }
-    incident_type = IncidentType.NONE
-    for keyword, type_val in type_map.items():
-        if rabin_karp_search(desc_lower, keyword):
-            incident_type = type_val
-            break
-
-    if "fire" in services:
-        department = Department.FIRE
-    elif "ambulance" in services:
-        department = Department.MEDICAL
-    elif "police" in services:
-        department = Department.POLICE
-    else:
-        department = Department.NONE
-
-    all_keywords = list(getSeverity.__annotations__['return'].__args__[0].__args__)
-    keyword_hits = {}
-    desc_lower = description.lower()
-    return Incident(
-        incidentType=incident_type,
-        department=department,
-        location=address,
-        locationName = "Residence",
-        time=time,
-        resourceNeed=len(services),
-        timeNeed=severity * 5,
-        description=description,
-    )
-    
 
 def analyze_incident(description: str):
     KEYWORDS_TO_SERVICES = {
@@ -106,7 +36,6 @@ def analyze_incident(description: str):
         "assault": {"police"},
         "bomb threat": {"police"}
     }
-
     services_needed = set()
     description_l = description.lower()
     for keyword, services in KEYWORDS_TO_SERVICES.items():
@@ -151,8 +80,6 @@ def extract_address(description: str):
     
     return description[start_pos:end_pos].strip()
 
-
-#Knuth Morris Pratt
 def computer_lps(pattern):
     m = len(pattern)
     lps = [0] * m
@@ -219,3 +146,61 @@ def getSeverity(desc):
             if Knuth_morris_pratt(description_l, keyword):
                 totalseverity += severity
     return totalseverity
+
+def getIncidentType(desc : str):
+    type_map = {
+        "fire": IncidentType.HOUSE_FIRE,
+        "smoke": IncidentType.SMOKE,
+        "gas leak": IncidentType.GAS_LEAK,
+        "explosion": IncidentType.EXPLOSION,
+        "drowning": IncidentType.DROWNING,
+        "overdose": IncidentType.OVERDOSE,
+        "heart attack": IncidentType.HEART_ATTACK,
+        "breathing": IncidentType.BREATHING_ISSUE,
+        "unconscious": IncidentType.UNCONSCIOUS,
+        "injury": IncidentType.INJURY,
+        "injuries": IncidentType.INJURY,
+        "collision": IncidentType.COLLISION,
+        "accident": IncidentType.ACCIDENT,
+        "robbery": IncidentType.ROBBERY,
+        "theft": IncidentType.THEFT,
+        "break-in": IncidentType.BREAK_IN,
+        "assault": IncidentType.ASSAULT,
+        "bomb threat": IncidentType.BOMB_THREAT
+    }
+    locations = []
+    for element in type_map:
+        if len(rabin_karp_search(desc, element)):
+            locations.append(element)
+    if len(locations) == 0:
+        return IncidentType.NONE
+    else:
+        return locations[0]
+
+def checkForIncident(time : int):
+    time = convert_time(time)
+    logs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
+    bin_path = os.path.join(logs_dir, f"{time}.bin")
+    if not os.path.exists(bin_path):
+        return []
+    chance = random.randint(1,2)
+    if chance == 1:
+        return []
+
+    description = decode_file(time)
+    incident_type = getIncidentType(description)
+    address = extract_address(description)
+    department = analyze_incident(description)
+    severity = getSeverity(description)
+    
+
+    return Incident(
+        incidentType=incident_type,
+        department=department,
+        location=address,
+        locationName = "Residence",
+        time=time,
+        resourceNeed=severity,
+        timeNeed=severity * 5,
+        description=description,
+    )
