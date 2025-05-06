@@ -1,4 +1,4 @@
-from algorithms.analyzeIncident import response
+from algorithms.analyzeIncident import checkForIncident
 from algorithms.dijkstra import dijkstraPath
 from simulation.Scheduler import Scheduler
 from ui.gui import SimulationUI
