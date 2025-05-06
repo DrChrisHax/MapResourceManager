@@ -28,8 +28,8 @@ class SimulationEngine:
         self.graphDict = self.ConvertGraphToIntGraph(self.ui.graphToDict())
 
     def run(self):
-        #self.ui.run()
-        self.Start()
+        self.ui.run()
+        #self.Start()
 
     def Start(self):
         #Starts the simulation for the in game day

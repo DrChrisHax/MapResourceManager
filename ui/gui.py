@@ -10,6 +10,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # End of Testing
 
 from algorithms.dijkstra import dijkstraPath
+from algorithms.prims import primsMST
+
 
 from models.node import Node
 from PIL import Image, ImageTk
@@ -93,7 +95,7 @@ class SimulationUI:
         self.startButton = tk.Button(self.buttonFrame, text="Start Simulation", command=self.startSimulation,
                                      bg="#4da6ff", fg="white", font=("Helvetica", 12, "bold"), width=20,
                                      activebackground="#3399ff", activeforeground="white")
-        self.startButton.grid(row=0, column=0, padx=10)
+        # self.startButton.grid(row=0, column=0, padx=10)
 
         self.quitButton = tk.Button(self.buttonFrame, text="Quit", command=self.root.quit,
                                     bg="#ff6666", fg="white", font=("Helvetica", 12, "bold"), width=20,
@@ -116,6 +118,17 @@ class SimulationUI:
                                     activebackground="#3399ff", activeforeground="white")
         self.stepButton.pack(side=tk.LEFT, padx=5)
         # End of Testing
+
+        # --- MST Button and Output ---
+        self.mstButton = tk.Button(self.rightFrame, text="Run MST for Red Nodes", command=self.runMST,
+                                bg="#77dd77", fg="white", font=("Helvetica", 12, "bold"), width=30)
+        self.mstButton.pack(pady=(20, 5))
+
+        self.mstOutputText = tk.Text(self.rightFrame, height=10, width=40, bg="#3f5870",
+                                    fg="white", insertbackground="white", relief=tk.GROOVE, bd=2)
+        self.mstOutputText.pack()
+
+
 
 
     def incrementClock(self):
@@ -441,6 +454,67 @@ class SimulationUI:
         print("Path found:", path)
         print("Total travel time:", total)
         self.animatePath(path, resourceType=2)  # 2 = Police
+
+
+    def runMST(self):
+        redNodes = [node.nodeId for node in self.nodes if node.nodeType == "Red"]
+        fullGraph = self.graphToDict()
+
+        # Step 1: Build a new red-only graph with Dijkstra distances between all red node pairs
+        redGraph = {node: [] for node in redNodes}
+        for i in range(len(redNodes)):
+            for j in range(i + 1, len(redNodes)):
+                u, v = redNodes[i], redNodes[j]
+                path, totalCost = dijkstraPath(fullGraph, u, v)
+                if path:
+                    redGraph[u].append((v, totalCost))
+                    redGraph[v].append((u, totalCost))
+
+        # Step 2: Run Prim’s algorithm
+        startNode = redNodes[0]
+        mstEdges = primsMST(redGraph, startNode)
+
+        # Step 3: Display nicely
+        self.mstOutputText.delete("1.0", tk.END)
+        self.mstOutputText.tag_configure("header", font=("Helvetica", 12, "bold", "underline"), foreground="#FFD700")
+        self.mstOutputText.tag_configure("edge", font=("Helvetica", 10), foreground="white")
+
+        self.mstOutputText.insert(tk.END, f"MST Between Red Nodes (via shortest paths)\n", "header")
+
+        if not mstEdges:
+            self.mstOutputText.insert(tk.END, "  No MST found.\n", "edge")
+        else:
+            for u, v, w in mstEdges:
+                self.mstOutputText.insert(tk.END, f"  {u} → {v} (total travel time: {w})\n", "edge")
+
+        self.highlightMSTPaths(mstEdges)
+        self.startButton.grid(row=0, column=0, padx=10)
+
+
+
+
+    def highlightMSTPaths(self, mstEdges: list[tuple[str, str, int]]):
+        graphDict = self.graphToDict()
+
+        for u, v, _ in mstEdges:
+            path, _ = dijkstraPath(graphDict, u, v)
+            if not path or len(path) < 2:
+                continue
+
+            for i in range(len(path) - 1):
+                fromNode = self.graph.nodes[path[i]]['obj']
+                toNode = self.graph.nodes[path[i + 1]]['obj']
+                line = self.canvas.create_line(
+                    fromNode.x, fromNode.y, toNode.x, toNode.y,
+                    fill="yellow", width=4
+                )
+                self.canvas.update()
+                self.canvas.after(250)  # 0.25 sec per segment
+                self.canvas.delete(line)
+
+            self.canvas.after(250)  # short pause between paths
+
+
 
 
 
