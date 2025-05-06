@@ -20,15 +20,15 @@ def checkForIncident(time: int):
     try:
         time = convert_time(time)
     except:
-        return None
+        return []
 
     logs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "logs"))
     bin_path = os.path.join(logs_dir, f"{time}.bin")
     if not os.path.exists(bin_path):
-        return None
+        return []
     chance = random.randint(1,2)
     if chance == 1:
-        return None
+        return []
 
     description = decode_file(time)
     address = extract_address(description)

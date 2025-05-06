@@ -35,38 +35,19 @@ class SimulationEngine:
         self.RunGameLoop()
 
     def RunGameLoop(self):
-        dummy_incident = Incident(
-                    incidentType=IncidentType.HOUSE_FIRE,
-                    department=Department.FIRE,
-                    location=10,
-                    locationName="Test Station",
-                    time=2,
-                    resourceNeed=1,
-                    timeNeed=15
-                )
-
         while self.inGameTime < self.maxTime:
-            #Generate a log and see if it results
-            #in new incident(s) to deal with
-            #If it does, add it to the queue of incidents
+            incidents = checkForIncident(self.inGameTime)
 
-            try:
-                raw_services, raw_address = response(self.inGameTime)
-            except:
-                pass
-
+            for inc in incidents:
+                self.scheduler.AddIncident(inc)
             
-            if self.inGameTime == 2:
-                self.scheduler.AddIncident(dummy_incident)
-
             dispatches = self.scheduler.Schedule(currentTime=self.inGameTime)
             if dispatches:
-                print(f"[Engine] t={self.inGameTime} dispatches: {dispatches}")
-
+                print(f"[Engine] time={self.inGameTime} dispatches: {dispatches}")
 
             self.inGameTime += 1
 
-        print(f"Day {self.day} done")
+        print(f"[Engine] Day {self.day} done")
         self.day += 1
 
     def ConvertGraphToIntGraph(self, graph: dict[str, list[tuple[str, int]]]) -> dict[int, list[tuple[int, int]]]:
