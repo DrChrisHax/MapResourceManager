@@ -194,7 +194,7 @@ def checkForIncident(time : int):
     severity = getSeverity(description)
     
 
-    return Incident(
+    return [Incident(
         incidentType=incident_type,
         department=department,
         location=address,
@@ -203,4 +203,4 @@ def checkForIncident(time : int):
         resourceNeed=severity,
         timeNeed=severity * 5,
         description=description,
-    )
+    )]
