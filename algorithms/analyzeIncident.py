@@ -193,24 +193,24 @@ def Knuth_morris_pratt(text, pattern):
 
 def getSeverity(desc):
     KEYWORDS_TO_SEVERITY = {
-        "fire": {2},
-        "smoke": {1},
-        "gas leak": {1},
-        "explosion": {3},
-        "drowning": {1},
-        "overdose": {2},
-        "heart attack": {1},
-        "breathing": {1},
-        "unconscious": {1},
-        "injury": {1},
-        "injuries": {2},
-        "collision": {2},
-        "accident": {1},
-        "robbery": {3},
-        "theft": {2},
-        "break-in": {1},
-        "assault": {1},
-        "bomb threat": {3}
+        "fire": 2,
+        "smoke": 1,
+        "gas leak": 1,
+        "explosion": 3,
+        "drowning": 1,
+        "overdose": 2,
+        "heart attack": 1,
+        "breathing": 1,
+        "unconscious": 1,
+        "injury": 1,
+        "injuries": 2,
+        "collision": 2,
+        "accident": 1,
+        "robbery": 3,
+        "theft": 2,
+        "break-in": 1,
+        "assault": 1,
+        "bomb threat": 3
     }
     totalseverity = 0
     description_l = desc.lower()

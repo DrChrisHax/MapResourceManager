@@ -7,7 +7,7 @@ from models.Incident import Incident, IncidentType, Department
 class SimulationEngine:
     def __init__(self):
         self.inGameTime = 0 #In game minutes
-        self.maxTime = 5 #24 * 60 #24 hours per simulated day
+        self.maxTime = 24 * 60 #24 hours per simulated day
         self.day = 1
         
 
@@ -28,8 +28,9 @@ class SimulationEngine:
         self.graphDict = self.ConvertGraphToIntGraph(self.ui.graphToDict())
 
     def run(self):
-        self.ui.run()
-        
+        #self.ui.run()
+        self.Start()
+
     def Start(self):
         #Starts the simulation for the in game day
         self.RunGameLoop()
