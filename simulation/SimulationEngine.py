@@ -3,6 +3,7 @@ from algorithms.dijkstra import dijkstraPath
 from simulation.Scheduler import Scheduler
 from ui.gui import SimulationUI
 from models.Incident import Incident, IncidentType, Department
+import time
 
 class SimulationEngine:
     def __init__(self):
@@ -25,7 +26,6 @@ class SimulationEngine:
 
         self.scheduler = Scheduler(engine=self, stationNodes=self.stationNodes)
         self.ui = SimulationUI(self)
-
         #A dictionary to convert the simulation engine graph
         #back into the graph form the UI wants
         self.intToNodeId = {
@@ -75,9 +75,15 @@ class SimulationEngine:
 
 
             self.inGameTime += 1
+            self.ui.setClock(self.inGameTime)
+            self.ui.root.update_idletasks()
+            self.ui.root.update()
+            time.sleep(0.05)
+            print(f"[Engine] time={self.inGameTime}")
 
         print(f"[Engine] Day {self.day} done")
         self.day += 1
+        self.inGameTime = 0
 
     def ConvertGraphToIntGraph(self, graph: dict[str, list[tuple[str, int]]]) -> dict[int, list[tuple[int, int]]]:
         intGraph: dict[int, list[tuple[int, int]]] = {}
