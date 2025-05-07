@@ -38,8 +38,8 @@ class Scheduler:
         return [v for v in self.vehicles if v.availableAt <= currentTime]
     
     def ComputerTravelTime(self, vehicle: Vehicle, node: int) -> int:
-        temp = self.engine.TravelCostAndPath(vehicle.currentLocation, node)
-        return temp[0]
+        path, cost = self.engine.TravelPathAndCost(vehicle.currentLocation, node)
+        return cost
 
     def RateIncident(self, incident: Incident, avail: List[Vehicle], currentTime: int):
         #Scores incidents for schedling
@@ -104,28 +104,25 @@ class Scheduler:
 
         return assignments
     
-    def Schedule(self, currentTime: int) -> List[Tuple[int, int]]:
-        #Assigns vehicles to as many incidents as possible this tick
-        #returns a list of (startNode, endNode) for each dispatched vehicle
+    def Schedule(self, currentTime: int) -> List[Tuple[int, List[int], int]]:
+    #Returns a list of (vehicleID, path, cost)
 
-        dispatches: List[Tuple[int, int]] =[]
+        dispatches: List[Tuple[int, List[int], int]] = []
         assignments = self.SelectIncidents(currentTime)
 
         for inc, vehs in assignments:
-            travelTime = [self.ComputerTravelTime(v, inc.location) for v in vehs]
-            maxTravel = max(travelTime) if travelTime else 0
-
-            #Each vehicle needs to travel there, wait for everyone to be there, then service the incident
-            serviceEnd = currentTime + maxTravel + inc.timeNeed
-
             for v in vehs:
-                start = v.currentLocation
-                #Mark vehicle unavailable until serviceEnd
+                path, cost = self.engine.TravelPathAndCost(v.currentLocation, inc.location)
+
+                #Mark vehicle unavailable
+                travelTime = cost  
+                serviceEnd = currentTime + travelTime + inc.timeNeed
+
                 v.availableAt = serviceEnd
                 v.currentLocation = inc.location
-                dispatches.append((start, inc.location))
+
+                dispatches.append((v.id, path, cost))
 
             self.pending.remove(inc)
 
         return dispatches
-

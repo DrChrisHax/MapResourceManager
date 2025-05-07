@@ -59,5 +59,5 @@ class Incident:
             f"dept={dept_names} "
             f"Vehicle need={self.resourceNeed} "
             f"Time need={self.timeNeed} "
-            f"location={self.locationName} at {self.location}>"
+            f"location={self.locationName} at node {self.location}>"
         )

@@ -29,7 +29,6 @@ class SimulationEngine:
 
     def run(self):
         self.ui.run()
-        #self.Start()
 
     def Start(self):
         #Starts the simulation for the in game day
@@ -41,15 +40,22 @@ class SimulationEngine:
 
             for inc in incidents:
                 self.scheduler.AddIncident(inc)
+                print(f"[Engine] time={self.inGameTime} received incident: {inc}")
             
             dispatches = self.scheduler.Schedule(currentTime=self.inGameTime)
             if dispatches:
-                print(f"[Engine] time={self.inGameTime} dispatches: {dispatches}")
+                for dispatch in dispatches:
+                    vehicleID, path, cost = dispatch
+                    print(f"[Engine] time={self.inGameTime} Dispatch Vehicle {vehicleID} -> Path: {path}, Cost: {cost}")
+
 
             self.inGameTime += 1
 
         print(f"[Engine] Day {self.day} done")
         self.day += 1
+
+
+        
 
     def ConvertGraphToIntGraph(self, graph: dict[str, list[tuple[str, int]]]) -> dict[int, list[tuple[int, int]]]:
         intGraph: dict[int, list[tuple[int, int]]] = {}
@@ -63,9 +69,9 @@ class SimulationEngine:
         return intGraph
 
 
-    def TravelCostAndPath(self, startNode: int, endNode: int) -> int:
+    def TravelPathAndCost(self, startNode: int, endNode: int):
         path, cost = dijkstraPath(self.graphDict, startNode, endNode)
-        return path
+        return path, cost
     
         
     
