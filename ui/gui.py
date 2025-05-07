@@ -3,6 +3,7 @@ from tkinter import Canvas
 import networkx as nx
 import random
 import os
+from models.Incident import Department
 
 # For testing
 import sys
@@ -25,7 +26,7 @@ class SimulationUI:
         self.root.title("Simulation Home Page")
         self.root.geometry("1200x960")
         self.root.configure(bg="#2b3e50")
-        self.root.overrideredirect(True)  # <-- Borderless window
+        #self.root.overrideredirect(True)  # <-- Borderless window
 
         # ---------------- Custom Drag Bar ----------------
         self.titleBar = tk.Frame(self.root, bg="#1f2d3a", relief='raised', bd=0, height=40)
@@ -95,7 +96,7 @@ class SimulationUI:
         self.startButton = tk.Button(self.buttonFrame, text="Start Simulation", command=self.startSimulation,
                                      bg="#4da6ff", fg="white", font=("Helvetica", 12, "bold"), width=20,
                                      activebackground="#3399ff", activeforeground="white")
-        # self.startButton.grid(row=0, column=0, padx=10)
+        self.startButton.grid(row=0, column=0, padx=10)
 
         self.quitButton = tk.Button(self.buttonFrame, text="Quit", command=self.root.quit,
                                     bg="#ff6666", fg="white", font=("Helvetica", 12, "bold"), width=20,
@@ -112,13 +113,6 @@ class SimulationUI:
         self.clockLabel = tk.Label(self.clockFrame, text="Time: 00:00", bg="#1f2d3a", fg="white", font=("Helvetica", 12))
         self.clockLabel.pack(side=tk.LEFT, padx=5)
 
-        # Testing purposes: increment clock by 1 minute
-        self.stepButton = tk.Button(self.clockFrame, text="+1 min", command=self.incrementClock,
-                                    bg="#4da6ff", fg="white", font=("Helvetica", 10), bd=0,
-                                    activebackground="#3399ff", activeforeground="white")
-        self.stepButton.pack(side=tk.LEFT, padx=5)
-        # End of Testing
-
         # --- MST Button and Output ---
         self.mstButton = tk.Button(self.rightFrame, text="Run MST for Red Nodes", command=self.runMST,
                                 bg="#77dd77", fg="white", font=("Helvetica", 12, "bold"), width=30)
@@ -131,10 +125,9 @@ class SimulationUI:
 
 
 
-    def incrementClock(self):
-        self.clockTime = (self.clockTime + 1) % 1440  # Wraps after 1440 mins (24h) <-- This is where it increments
-        hours, minutes = divmod(self.clockTime, 60)
-        self.clockLabel.config(text=f"Time: {hours:02d}:{minutes:02d}")
+    def setClock(self, minutes: int):
+        hrs, mins = divmod(minutes, 60)
+        self.clockLabel.config(text=f"Time: {hrs:02d}:{mins:02d}")
 
     def enableCoordinateClickHelper(self):
         def onCanvasClick(event):
@@ -396,17 +389,17 @@ class SimulationUI:
         return adj
 
 
-    def animatePath(self, path: list[str], resourceType: int = 0):
+    def animatePath(self, path: list[str], resourceType: Department = Department.NONE):
         if not path:
             print("No path to animate.")
             return
 
         # Map resource types to sprite file paths
         spritePathMap = {
-            1: "../assets/ambulance.png",
-            2: "../assets/police.png",
-            3: "../assets/firetruck.png",
-            0: "../assets/generic.png"
+            Department.MEDICAL:     "../assets/ambulance.png",
+            Department.POLICE:      "../assets/police.png",
+            Department.FIRE:        "../assets/firetruck.png",
+            Department.NONE:        "../assets/generic.png"
         }
 
         spritePath = spritePathMap.get(resourceType, "../assets/generic.png")
@@ -453,7 +446,7 @@ class SimulationUI:
         path, total = dijkstraPath(graphDict, "Node 1 Red", "Node 10 Red")
         print("Path found:", path)
         print("Total travel time:", total)
-        self.animatePath(path, resourceType=2)  # 2 = Police
+        self.animatePath(path, resourceType=Department.POLICE)
 
 
     def runMST(self):

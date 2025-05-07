@@ -3,6 +3,7 @@ from algorithms.dijkstra import dijkstraPath
 from simulation.Scheduler import Scheduler
 from ui.gui import SimulationUI
 from models.Incident import Incident, IncidentType, Department
+import time
 
 class SimulationEngine:
     def __init__(self):
@@ -25,6 +26,13 @@ class SimulationEngine:
 
         self.scheduler = Scheduler(engine=self, stationNodes=self.stationNodes)
         self.ui = SimulationUI(self)
+        #A dictionary to convert the simulation engine graph
+        #back into the graph form the UI wants
+        self.intToNodeId = {
+            int(node.nodeId.split()[1]): node.nodeId
+            for node in self.ui.nodes
+        }
+
         self.graphDict = self.ConvertGraphToIntGraph(self.ui.graphToDict())
 
     def run(self):
@@ -36,26 +44,46 @@ class SimulationEngine:
 
     def RunGameLoop(self):
         while self.inGameTime < self.maxTime:
+            #1. Fetch new incidents
             incidents = checkForIncident(self.inGameTime)
-
             for inc in incidents:
                 self.scheduler.AddIncident(inc)
                 print(f"[Engine] time={self.inGameTime} received incident: {inc}")
             
+            #2. Schedule and dispatch resources
             dispatches = self.scheduler.Schedule(currentTime=self.inGameTime)
             if dispatches:
                 for dispatch in dispatches:
-                    vehicleID, path, cost = dispatch
-                    print(f"[Engine] time={self.inGameTime} Dispatch Vehicle {vehicleID} -> Path: {path}, Cost: {cost}")
+                    inc, v, path, cost = dispatch
+                    
+                    #3. Update GUI dashboard
+                    policeCount, fireCount, medicalCount = self.getAvailableResourceCounts()
+                    self.ui.updateDashboard(
+                        policeCount,
+                        fireCount,
+                        medicalCount,
+                        address=f"{inc.locationName} @ node {inc.location}",
+                        incidentType=inc.incidentType.name,
+                        time=self.formatTime(),
+                        priority=str(inc.resourceNeed)
+                    )
+
+                    #4. Send the resource out
+                    print(f"[Engine] time={self.inGameTime} Dispatch Vehicle {v.id} -> Path: {path}, Cost: {cost}")
+                    guiGraphPath = [self.intToNodeId[n] for n in path] #Convert engine graph nodes to gui graph nodes
+                    self.ui.animatePath(guiGraphPath, v.department)
 
 
             self.inGameTime += 1
+            self.ui.setClock(self.inGameTime)
+            self.ui.root.update_idletasks()
+            self.ui.root.update()
+            time.sleep(0.05)
+            print(f"[Engine] time={self.inGameTime}")
 
         print(f"[Engine] Day {self.day} done")
         self.day += 1
-
-
-        
+        self.inGameTime = 0
 
     def ConvertGraphToIntGraph(self, graph: dict[str, list[tuple[str, int]]]) -> dict[int, list[tuple[int, int]]]:
         intGraph: dict[int, list[tuple[int, int]]] = {}
@@ -68,10 +96,20 @@ class SimulationEngine:
                 intGraph.setdefault(v, []).append((u, w))
         return intGraph
 
-
     def TravelPathAndCost(self, startNode: int, endNode: int):
         path, cost = dijkstraPath(self.graphDict, startNode, endNode)
         return path, cost
     
+    def formatTime(self) -> str:
+        hrs, mins = divmod(self.inGameTime, 60)
+        return f"{hrs:02d}:{mins:02d}"
+
+    def getAvailableResourceCounts(self) -> tuple[int,int,int]:
+        """Returns (#police_free, #fire_free, #medical_free)"""
+        free = [v for v in self.scheduler.vehicles if v.availableAt <= self.inGameTime]
+        police = sum(1 for v in free if v.department == Department.POLICE)
+        fire   = sum(1 for v in free if v.department == Department.FIRE)
+        med    = sum(1 for v in free if v.department == Department.MEDICAL)
+        return police, fire, med
         
     
