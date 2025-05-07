@@ -3,6 +3,7 @@ from tkinter import Canvas
 import networkx as nx
 import random
 import os
+from models.Incident import Department
 
 # For testing
 import sys
@@ -396,17 +397,17 @@ class SimulationUI:
         return adj
 
 
-    def animatePath(self, path: list[str], resourceType: int = 0):
+    def animatePath(self, path: list[str], resourceType: Department = Department.NONE):
         if not path:
             print("No path to animate.")
             return
 
         # Map resource types to sprite file paths
         spritePathMap = {
-            1: "../assets/ambulance.png",
-            2: "../assets/police.png",
-            3: "../assets/firetruck.png",
-            0: "../assets/generic.png"
+            Department.MEDICAL:     "../assets/ambulance.png",
+            Department.POLICE:      "../assets/police.png",
+            Department.FIRE:        "../assets/firetruck.png",
+            Department.NONE:        "../assets/generic.png"
         }
 
         spritePath = spritePathMap.get(resourceType, "../assets/generic.png")
@@ -453,7 +454,7 @@ class SimulationUI:
         path, total = dijkstraPath(graphDict, "Node 1 Red", "Node 10 Red")
         print("Path found:", path)
         print("Total travel time:", total)
-        self.animatePath(path, resourceType=2)  # 2 = Police
+        self.animatePath(path, resourceType=Department.POLICE)
 
 
     def runMST(self):

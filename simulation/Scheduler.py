@@ -104,10 +104,10 @@ class Scheduler:
 
         return assignments
     
-    def Schedule(self, currentTime: int) -> List[Tuple[int, List[int], int]]:
+    def Schedule(self, currentTime: int) -> List[Tuple[Incident, Vehicle, List[int], int]]:
     #Returns a list of (vehicleID, path, cost)
 
-        dispatches: List[Tuple[int, List[int], int]] = []
+        dispatches: List[Tuple[Incident, Vehicle, List[int], int]] = []
         assignments = self.SelectIncidents(currentTime)
 
         for inc, vehs in assignments:
@@ -121,7 +121,7 @@ class Scheduler:
                 v.availableAt = serviceEnd
                 v.currentLocation = inc.location
 
-                dispatches.append((v.id, path, cost))
+                dispatches.append((inc, v, path, cost))
 
             self.pending.remove(inc)
 
