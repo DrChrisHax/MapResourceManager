@@ -28,23 +28,13 @@ class SimulationEngine:
         self.graphDict = self.ConvertGraphToIntGraph(self.ui.graphToDict())
 
     def run(self):
-        #self.ui.run()
-        self.Start()
+        self.ui.run()
 
     def Start(self):
         #Starts the simulation for the in game day
         self.RunGameLoop()
 
     def RunGameLoop(self):
-
-        startNode: int = 1
-        endNode: int = 3
-
-        path, cost = dijkstraPath(self.graphDict, startNode, endNode)
-        print(self.graphDict)
-        print(path)
-        print(cost)
-
         while self.inGameTime < self.maxTime:
             incidents = checkForIncident(self.inGameTime)
 
@@ -80,17 +70,7 @@ class SimulationEngine:
 
 
     def TravelPathAndCost(self, startNode: int, endNode: int):
-        
-
         path, cost = dijkstraPath(self.graphDict, startNode, endNode)
-
-        print(self.graphDict)
-        print(startNode)
-        print(endNode)
-        print(path)
-        print(cost)
-        exit()
-
         return path, cost
     
         

@@ -68,7 +68,7 @@ def rabin_karp_search(desc, keyw, q=101):
                 t_hash += q
     return positions
 
-def extract_address(description: str):
+def extract_address(description: str) -> int:
     pos_list = rabin_karp_search(description, 'Address: ')
     if not pos_list:
         return "Unknown Address"
@@ -78,7 +78,7 @@ def extract_address(description: str):
     if end_pos == -1:
         end_pos = len(description)
     
-    return description[start_pos:end_pos].strip()
+    return int(description[start_pos:end_pos].strip())
 
 def computer_lps(pattern):
     m = len(pattern)

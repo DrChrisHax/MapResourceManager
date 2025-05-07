@@ -113,7 +113,7 @@ class SimulationUI:
         self.clockLabel.pack(side=tk.LEFT, padx=5)
 
         # Testing purposes: increment clock by 1 minute
-        self.stepButton = tk.Button(self.clockFrame, text="⏱️ +1 min", command=self.incrementClock,
+        self.stepButton = tk.Button(self.clockFrame, text="+1 min", command=self.incrementClock,
                                     bg="#4da6ff", fg="white", font=("Helvetica", 10), bd=0,
                                     activebackground="#3399ff", activeforeground="white")
         self.stepButton.pack(side=tk.LEFT, padx=5)
